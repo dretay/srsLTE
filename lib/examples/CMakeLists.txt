@@ -36,6 +36,7 @@ if(RF_FOUND)
 
   add_executable(pdsch_enodeb pdsch_enodeb.c)
   target_link_libraries(pdsch_enodeb srslte_phy srslte_common srslte_rf pthread)
+  
 else(RF_FOUND)
   add_definitions(-DDISABLE_RF)
 
@@ -44,6 +45,8 @@ else(RF_FOUND)
 
   add_executable(pdsch_enodeb pdsch_enodeb.c)
   target_link_libraries(pdsch_enodeb srslte_common srslte_phy pthread)
+  
+
 endif(RF_FOUND)
 
 if(SRSGUI_FOUND)
@@ -52,6 +55,20 @@ if(SRSGUI_FOUND)
   add_definitions(-DENABLE_GUI)
 endif(SRSGUI_FOUND)
 
+if(RF_FOUND)
+  set(RF_LIBS srslte_rf)
+else(RF_FOUND)
+  set(RF_LIBS "")
+endif(RF_FOUND)
+
+message("RF LIBS: " ${RF_LIBS})
+
+add_executable(pdcch_enodeb pdcch_enodeb.c)
+target_link_libraries(pdcch_enodeb srslte_common srslte_phy ${RF_LIBS} pthread)
+
+add_executable(pdcch_enodeb_cpp pdcch_enodeb.cc DCIFactory.cc DCIFileReplay.cc CSV.cc)
+target_link_libraries(pdcch_enodeb_cpp srslte_common srslte_phy ${RF_LIBS} pthread)
+target_compile_options(pdcch_enodeb_cpp PUBLIC "-std=c++11")
 
 #################################################################
 # These examples need the UHD driver
