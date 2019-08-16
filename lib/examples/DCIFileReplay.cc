@@ -19,7 +19,9 @@ bool DCIFileReplay::openFile(std::string filename) {
     return false;
   }
 
-  // these settings should be read from some file
+  // cell settings could be read from some file, too
+  // currently, don't change the provided cell object
+  /*
   cell.nof_prb = 50;
   cell.nof_ports = 1;
   cell.id = 0;
@@ -27,6 +29,7 @@ bool DCIFileReplay::openFile(std::string filename) {
   cell.phich_length = SRSLTE_PHICH_NORM;
   cell.phich_resources = SRSLTE_PHICH_R_1;
   cell.frame_type = SRSLTE_FDD;
+  */
 
   return true;
 }

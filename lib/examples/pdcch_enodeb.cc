@@ -89,9 +89,9 @@ void PDCCH_ENODEB::usage(char *prog) {
 #ifndef DISABLE_RF
   printf("\t-I RF device [Default %s]\n", rf_dev);
   printf("\t-a RF args [Default %s]\n", rf_args);
-  printf("\t-l RF amplitude [Default %.2f]\n", (double)rf_amp);
-  printf("\t-g RF TX gain [Default %.2f dB]\n", (double)rf_gain);
-  printf("\t-f RF TX frequency [Default %.1f MHz]\n", (double)rf_freq / 1000000);
+  printf("\t-l RF amplitude [Default %.2f]\n", static_cast<double>(rf_amp));
+  printf("\t-g RF TX gain [Default %.2f dB]\n", static_cast<double>(rf_gain));
+  printf("\t-f RF TX frequency [Default %.1f MHz]\n", static_cast<double>(rf_freq) / 1000000);
 #else
   printf("\t   RF is disabled.\n");
 #endif
@@ -104,9 +104,9 @@ void PDCCH_ENODEB::usage(char *prog) {
   printf("\t-x Transmission mode [1-4] [Default %d]\n", transmission_mode + 1);
   printf("\t-b Precoding Matrix Index (multiplex mode only)* [Default %d]\n", multiplex_pmi);
   printf("\t-w Number of codewords/layers (multiplex mode only)* [Default %d]\n", multiplex_nof_layers);
-  printf("\t-u listen TCP/UDP port for input data (if mbsfn is active then the stream is over mbsfn only) (-1 is random) [Default %d]\n", net_port);
+  //printf("\t-u listen TCP/UDP port for input data (if mbsfn is active then the stream is over mbsfn only) (-1 is random) [Default %d]\n", net_port);
   printf("\t-v [set srslte_verbose to debug, default none]\n");
-  printf("\t-s output file SNR [Default %f]\n", (double)output_file_snr);
+  printf("\t-s output file SNR [Default %f]\n", static_cast<double>(output_file_snr));
   printf("\t-q Enable/Disable 256QAM modulation (default %s)\n", enable_256qam ? "enabled" : "disabled");
   printf("\n");
   printf("\t*: See 3GPP 36.212 Table  5.3.3.1.5-4 for more information\n");
@@ -141,9 +141,9 @@ void PDCCH_ENODEB::parse_args(int argc, char **argv) {
       case 'm':
         mcs_idx = (uint32_t)atoi(argv[optind]);
         break;
-      case 'u':
-        net_port = atoi(argv[optind]);
-        break;
+//      case 'u':
+//        net_port = atoi(argv[optind]);
+//        break;
       case 'n':
         nof_frames = atoi(argv[optind]);
         break;
@@ -267,22 +267,22 @@ void PDCCH_ENODEB::base_init() {
 #endif
   }
 
-  if (net_port > 0) {
-    if (srslte_netsource_init(&net_source, "127.0.0.1", (uint16_t)net_port, SRSLTE_NETSOURCE_UDP)) {
-      ERROR("Error creating input UDP socket at port %d\n", net_port);
-      exit(-1);
-    }
-    if (null_file_sink) {
-      if (srslte_netsink_init(&net_sink, "127.0.0.1", (uint16_t)net_port+1, SRSLTE_NETSINK_TCP)) {
-        ERROR("Error sink\n");
-        exit(-1);
-      }
-    }
-    if (sem_init(&net_sem, 0, 1)) {
-      perror("sem_init");
-      exit(-1);
-    }
-  }
+//  if (net_port > 0) {
+//    if (srslte_netsource_init(&net_source, "127.0.0.1", (uint16_t)net_port, SRSLTE_NETSOURCE_UDP)) {
+//      ERROR("Error creating input UDP socket at port %d\n", net_port);
+//      exit(-1);
+//    }
+//    if (null_file_sink) {
+//      if (srslte_netsink_init(&net_sink, "127.0.0.1", (uint16_t)net_port+1, SRSLTE_NETSINK_TCP)) {
+//        ERROR("Error sink\n");
+//        exit(-1);
+//      }
+//    }
+//    if (sem_init(&net_sem, 0, 1)) {
+//      perror("sem_init");
+//      exit(-1);
+//    }
+//  }
 
   /* create ifft object */
   for (i = 0; i < cell.nof_ports; i++) {
@@ -414,10 +414,10 @@ void PDCCH_ENODEB::base_free() {
 #endif
   }
 
-  if (net_port > 0) {
-    srslte_netsource_free(&net_source);
-    sem_close(&net_sem);
-  }
+//  if (net_port > 0) {
+//    srslte_netsource_free(&net_source);
+//    sem_close(&net_sem);
+//  }
 }
 
 
@@ -441,167 +441,167 @@ uint32_t PDCCH_ENODEB::prbset_to_bitmask() {
   return reverse(mask)>>(32-nb);
 }
 
-int PDCCH_ENODEB::update_radl() {
+//int PDCCH_ENODEB::update_radl() {
 
-  ZERO_OBJECT(dci_dl);
+//  ZERO_OBJECT(dci_dl);
 
-  /* Configure cell and PDSCH in function of the transmission mode */
-  switch (transmission_mode) {
-    case SRSLTE_TM1:
-    case SRSLTE_TM2:
-      nof_tb = 1;
-      dci_dl.format = SRSLTE_DCI_FORMAT1;
-      break;
-    case SRSLTE_TM3:
-      dci_dl.format = SRSLTE_DCI_FORMAT2A;
-      nof_tb = 2;
-      break;
-    case SRSLTE_TM4:
-      dci_dl.format = SRSLTE_DCI_FORMAT2;
-      nof_tb = multiplex_nof_layers;
-      if (multiplex_nof_layers == 1) {
-        dci_dl.pinfo = (uint8_t)(multiplex_pmi + 1);
-      } else {
-        dci_dl.pinfo = (uint8_t)multiplex_pmi;
-      }
-      break;
-    default:
-      ERROR("Transmission mode not implemented.");
-      exit(-1);
-  }
+//  /* Configure cell and PDSCH in function of the transmission mode */
+//  switch (transmission_mode) {
+//    case SRSLTE_TM1:
+//    case SRSLTE_TM2:
+//      nof_tb = 1;
+//      dci_dl.format = SRSLTE_DCI_FORMAT1;
+//      break;
+//    case SRSLTE_TM3:
+//      dci_dl.format = SRSLTE_DCI_FORMAT2A;
+//      nof_tb = 2;
+//      break;
+//    case SRSLTE_TM4:
+//      dci_dl.format = SRSLTE_DCI_FORMAT2;
+//      nof_tb = multiplex_nof_layers;
+//      if (multiplex_nof_layers == 1) {
+//        dci_dl.pinfo = (uint8_t)(multiplex_pmi + 1);
+//      } else {
+//        dci_dl.pinfo = (uint8_t)multiplex_pmi;
+//      }
+//      break;
+//    default:
+//      ERROR("Transmission mode not implemented.");
+//      exit(-1);
+//  }
 
-  dci_dl.rnti                    = UE_CRNTI;
-  dci_dl.pid                     = 0;
-  dci_dl.tb[0].mcs_idx           = mcs_idx;
-  dci_dl.tb[0].ndi               = 0;
-  dci_dl.tb[0].rv                = rvidx[0];
-  dci_dl.tb[0].cw_idx            = 0;
-  dci_dl.alloc_type              = SRSLTE_RA_ALLOC_TYPE0;
-  dci_dl.type0_alloc.rbg_bitmask = prbset_to_bitmask();
+//  dci_dl.rnti                    = UE_CRNTI;
+//  dci_dl.pid                     = 0;
+//  dci_dl.tb[0].mcs_idx           = mcs_idx;
+//  dci_dl.tb[0].ndi               = 0;
+//  dci_dl.tb[0].rv                = rvidx[0];
+//  dci_dl.tb[0].cw_idx            = 0;
+//  dci_dl.alloc_type              = SRSLTE_RA_ALLOC_TYPE0;
+//  dci_dl.type0_alloc.rbg_bitmask = prbset_to_bitmask();
 
-  if (nof_tb > 1) {
-    dci_dl.tb[1].mcs_idx = mcs_idx;
-    dci_dl.tb[1].ndi     = 0;
-    dci_dl.tb[1].rv      = rvidx[1];
-    dci_dl.tb[1].cw_idx  = 1;
-  } else {
-    SRSLTE_DCI_TB_DISABLE(dci_dl.tb[1]);
-  }
+//  if (nof_tb > 1) {
+//    dci_dl.tb[1].mcs_idx = mcs_idx;
+//    dci_dl.tb[1].ndi     = 0;
+//    dci_dl.tb[1].rv      = rvidx[1];
+//    dci_dl.tb[1].cw_idx  = 1;
+//  } else {
+//    SRSLTE_DCI_TB_DISABLE(dci_dl.tb[1]);
+//  }
 
-  srslte_dci_dl_fprint(stdout, &dci_dl, cell.nof_prb);
-  if (transmission_mode != SRSLTE_TM1) {
-    printf("\nTransmission mode key table:\n");
-    printf("   Mode   |   1TB   | 2TB |\n");
-    printf("----------+---------+-----+\n");
-    printf("Diversity |    x    |     |\n");
-    printf("      CDD |         |  z  |\n");
-    printf("Multiplex | q,w,e,r | a,s |\n");
-    printf("\n");
-    printf("Type new MCS index (0-28) or mode key and press Enter: ");
-  } else {
-    printf("Type new MCS index (0-28) and press Enter: ");
-  }
-  fflush(stdout);
+//  srslte_dci_dl_fprint(stdout, &dci_dl, cell.nof_prb);
+//  if (transmission_mode != SRSLTE_TM1) {
+//    printf("\nTransmission mode key table:\n");
+//    printf("   Mode   |   1TB   | 2TB |\n");
+//    printf("----------+---------+-----+\n");
+//    printf("Diversity |    x    |     |\n");
+//    printf("      CDD |         |  z  |\n");
+//    printf("Multiplex | q,w,e,r | a,s |\n");
+//    printf("\n");
+//    printf("Type new MCS index (0-28) or mode key and press Enter: ");
+//  } else {
+//    printf("Type new MCS index (0-28) and press Enter: ");
+//  }
+//  fflush(stdout);
 
-  return 0;
-}
+//  return 0;
+//}
 
 /* Read new MCS from stdin */
-int PDCCH_ENODEB::update_control() {
-  char input[128];
+//int PDCCH_ENODEB::update_control() {
+//  char input[128];
 
-  fd_set set;
-  FD_ZERO(&set);
-  FD_SET(0, &set);
+//  fd_set set;
+//  FD_ZERO(&set);
+//  FD_SET(0, &set);
 
-  struct timeval to;
-  to.tv_sec = 0;
-  to.tv_usec = 0;
+//  struct timeval to;
+//  to.tv_sec = 0;
+//  to.tv_usec = 0;
 
-  int n = select(1, &set, nullptr, nullptr, &to);
-  if (n == 1) {
-    // stdin ready
-    if (fgets(input, sizeof(input), stdin)) {
-      if(input[0] == 27) {
-        switch(input[2]) {
-          case RIGHT_KEY:
-            if (prbset_orig  + prbset_num < (int)(ceilf((float) cell.nof_prb / srslte_ra_type0_P(cell.nof_prb))))
-              prbset_orig++;
-            break;
-          case LEFT_KEY:
-            if (prbset_orig > 0)
-              prbset_orig--;
-            break;
-          case UP_KEY:
-            if (prbset_num < (int)(ceilf((float)cell.nof_prb / srslte_ra_type0_P(cell.nof_prb))))
-              prbset_num++;
-            break;
-          case DOWN_KEY:
-            last_prbset_num = prbset_num;
-            if (prbset_num > 0)
-              prbset_num--;
-            break;
-        }
-      } else {
-        switch (input[0]) {
-          case 'q':
-            transmission_mode    = SRSLTE_TM4;
-            multiplex_pmi        = 0;
-            multiplex_nof_layers = 1;
-            break;
-          case 'w':
-            transmission_mode    = SRSLTE_TM4;
-            multiplex_pmi        = 1;
-            multiplex_nof_layers = 1;
-            break;
-          case 'e':
-            transmission_mode    = SRSLTE_TM4;
-            multiplex_pmi        = 2;
-            multiplex_nof_layers = 1;
-            break;
-          case 'r':
-            transmission_mode    = SRSLTE_TM4;
-            multiplex_pmi        = 3;
-            multiplex_nof_layers = 1;
-            break;
-          case 'a':
-            transmission_mode    = SRSLTE_TM4;
-            multiplex_pmi        = 0;
-            multiplex_nof_layers = 2;
-            break;
-          case 's':
-            transmission_mode    = SRSLTE_TM4;
-            multiplex_pmi        = 1;
-            multiplex_nof_layers = 2;
-            break;
-          case 'z':
-            transmission_mode = SRSLTE_TM3;
-            break;
-          case 'x':
-            transmission_mode = SRSLTE_TM2;
-            break;
-          default:
-            last_mcs_idx = mcs_idx;
-            mcs_idx = (uint32_t)atoi(input);
-        }
-      }
-      bzero(input,sizeof(input));
-      if (update_radl()) {
-        printf("Trying with last known MCS index\n");
-        mcs_idx = last_mcs_idx;
-        prbset_num = last_prbset_num;
-        return update_radl();
-      }
-    }
-    return 0;
-  } else if (n < 0) {
-    // error
-    perror("select");
-    return -1;
-  } else {
-    return 0;
-  }
-}
+//  int n = select(1, &set, nullptr, nullptr, &to);
+//  if (n == 1) {
+//    // stdin ready
+//    if (fgets(input, sizeof(input), stdin)) {
+//      if(input[0] == 27) {
+//        switch(input[2]) {
+//          case RIGHT_KEY:
+//            if (prbset_orig  + prbset_num < (int)(ceilf((float) cell.nof_prb / srslte_ra_type0_P(cell.nof_prb))))
+//              prbset_orig++;
+//            break;
+//          case LEFT_KEY:
+//            if (prbset_orig > 0)
+//              prbset_orig--;
+//            break;
+//          case UP_KEY:
+//            if (prbset_num < (int)(ceilf((float)cell.nof_prb / srslte_ra_type0_P(cell.nof_prb))))
+//              prbset_num++;
+//            break;
+//          case DOWN_KEY:
+//            last_prbset_num = prbset_num;
+//            if (prbset_num > 0)
+//              prbset_num--;
+//            break;
+//        }
+//      } else {
+//        switch (input[0]) {
+//          case 'q':
+//            transmission_mode    = SRSLTE_TM4;
+//            multiplex_pmi        = 0;
+//            multiplex_nof_layers = 1;
+//            break;
+//          case 'w':
+//            transmission_mode    = SRSLTE_TM4;
+//            multiplex_pmi        = 1;
+//            multiplex_nof_layers = 1;
+//            break;
+//          case 'e':
+//            transmission_mode    = SRSLTE_TM4;
+//            multiplex_pmi        = 2;
+//            multiplex_nof_layers = 1;
+//            break;
+//          case 'r':
+//            transmission_mode    = SRSLTE_TM4;
+//            multiplex_pmi        = 3;
+//            multiplex_nof_layers = 1;
+//            break;
+//          case 'a':
+//            transmission_mode    = SRSLTE_TM4;
+//            multiplex_pmi        = 0;
+//            multiplex_nof_layers = 2;
+//            break;
+//          case 's':
+//            transmission_mode    = SRSLTE_TM4;
+//            multiplex_pmi        = 1;
+//            multiplex_nof_layers = 2;
+//            break;
+//          case 'z':
+//            transmission_mode = SRSLTE_TM3;
+//            break;
+//          case 'x':
+//            transmission_mode = SRSLTE_TM2;
+//            break;
+//          default:
+//            last_mcs_idx = mcs_idx;
+//            mcs_idx = (uint32_t)atoi(input);
+//        }
+//      }
+//      bzero(input,sizeof(input));
+//      if (update_radl()) {
+//        printf("Trying with last known MCS index\n");
+//        mcs_idx = last_mcs_idx;
+//        prbset_num = last_prbset_num;
+//        return update_radl();
+//      }
+//    }
+//    return 0;
+//  } else if (n < 0) {
+//    // error
+//    perror("select");
+//    return -1;
+//  } else {
+//    return 0;
+//  }
+//}
 
 void PDCCH_ENODEB::updateSearchSpace() {
   for(uint32_t cfi=0; cfi<3; cfi++) {
@@ -614,56 +614,56 @@ void PDCCH_ENODEB::updateSearchSpace() {
 }
 
 
-/** Function run in a separate thread to receive UDP data */
-void* PDCCH_ENODEB::net_thread_fnc(void *arg) {
-  return static_cast<PDCCH_ENODEB*>(arg)->_net_thread_fnc();
-}
+/* Function run in a separate thread to receive UDP data */
+//void* PDCCH_ENODEB::net_thread_fnc(void *arg) {
+//  return static_cast<PDCCH_ENODEB*>(arg)->_net_thread_fnc();
+//}
 
-void* PDCCH_ENODEB::_net_thread_fnc() {
+//void* PDCCH_ENODEB::_net_thread_fnc() {
 
-  int n;
-  int rpm = 0, wpm=0;
+//  int n;
+//  int rpm = 0, wpm=0;
 
-  do {
-    n = srslte_netsource_read(&net_source, &data2[rpm], DATA_BUFF_SZ-rpm);
-    if (n > 0) {
-      // FIXME: I assume that both transport blocks have same size in case of 2 tb are active
+//  do {
+//    n = srslte_netsource_read(&net_source, &data2[rpm], DATA_BUFF_SZ-rpm);
+//    if (n > 0) {
+//      // FIXME: I assume that both transport blocks have same size in case of 2 tb are active
 
-      int nbytes = 1 + (((mbsfn_area_id > -1) ? (pmch_cfg.pdsch_cfg.grant.tb[0].tbs)
-                        : (pdsch_cfg.grant.tb[0].tbs + pdsch_cfg.grant.tb[1].tbs)) -
-          1) /
-          8;
-      rpm += n;
-      INFO("received %d bytes. rpm=%d/%d\n",n,rpm,nbytes);
-      wpm = 0;
-      while (rpm >= nbytes) {
-        // wait for packet to be transmitted
-        sem_wait(&net_sem);
-        if(mbsfn_area_id > -1){
-          memcpy(data_mbms, &data2[wpm], (size_t)nbytes);
-        }
-        else{
-          memcpy(data[0], &data2[wpm], (size_t)nbytes / (size_t) 2);
-          memcpy(data[1], &data2[wpm], (size_t)nbytes / (size_t) 2);
-        }
-        INFO("Sent %d/%d bytes ready\n", nbytes, rpm);
-        rpm -= nbytes;
-        wpm += nbytes;
-        net_packet_ready = true;
-      }
-      if (wpm > 0) {
-        INFO("%d bytes left in buffer for next packet\n", rpm);
-        memcpy(data2, &data2[wpm], (size_t)rpm * sizeof(uint8_t));
-      }
-    } else if (n == 0) {
-      rpm = 0;
-    } else {
-      ERROR("Error receiving from network\n");
-      exit(-1);
-    }
-  } while(n >= 0);
-  return nullptr;
-}
+//      int nbytes = 1 + (((mbsfn_area_id > -1) ? (pmch_cfg.pdsch_cfg.grant.tb[0].tbs)
+//                        : (pdsch_cfg.grant.tb[0].tbs + pdsch_cfg.grant.tb[1].tbs)) -
+//          1) /
+//          8;
+//      rpm += n;
+//      INFO("received %d bytes. rpm=%d/%d\n",n,rpm,nbytes);
+//      wpm = 0;
+//      while (rpm >= nbytes) {
+//        // wait for packet to be transmitted
+//        sem_wait(&net_sem);
+//        if(mbsfn_area_id > -1){
+//          memcpy(data_mbms, &data2[wpm], (size_t)nbytes);
+//        }
+//        else{
+//          memcpy(data[0], &data2[wpm], (size_t)nbytes / (size_t) 2);
+//          memcpy(data[1], &data2[wpm], (size_t)nbytes / (size_t) 2);
+//        }
+//        INFO("Sent %d/%d bytes ready\n", nbytes, rpm);
+//        rpm -= nbytes;
+//        wpm += nbytes;
+//        net_packet_ready = true;
+//      }
+//      if (wpm > 0) {
+//        INFO("%d bytes left in buffer for next packet\n", rpm);
+//        memcpy(data2, &data2[wpm], (size_t)rpm * sizeof(uint8_t));
+//      }
+//    } else if (n == 0) {
+//      rpm = 0;
+//    } else {
+//      ERROR("Error receiving from network\n");
+//      exit(-1);
+//    }
+//  } while(n >= 0);
+//  return nullptr;
+//}
 
 int PDCCH_ENODEB::run(int argc, char **argv) {
   int nf=0, N_id_2=0;
@@ -772,16 +772,16 @@ int PDCCH_ENODEB::run(int argc, char **argv) {
   }
 #endif
 
-  if (update_radl()) {
-    exit(-1);
-  }
+//  if (update_radl()) {
+//    exit(-1);
+//  }
 
-  if (net_port > 0) {
-    if (pthread_create(&net_thread, NULL, net_thread_fnc, NULL)) {
-      perror("pthread_create");
-      exit(-1);
-    }
-  }
+//  if (net_port > 0) {
+//    if (pthread_create(&net_thread, NULL, net_thread_fnc, NULL)) {
+//      perror("pthread_create");
+//      exit(-1);
+//    }
+//  }
   pmch_cfg.pdsch_cfg.grant.tb[0].tbs = 1096;
 
   srslte_dl_sf_cfg_t dl_sf;
@@ -976,106 +976,97 @@ void PDCCH_ENODEB::putDCIfromFactory(srslte_dl_sf_cfg_t& dl_sf, cf_t* sf_symbols
   }
 }
 
-void PDCCH_ENODEB::encodeSubframeData(srslte_dl_sf_cfg_t& dl_sf, cf_t* sf_symbols[SRSLTE_MAX_PORTS], bool mbsfn) {
-  if (!mbsfn) {
-    encodeSubframeDataNormal(dl_sf, sf_symbols);
-  }
-  else {
-    encodeSubframeDataMBSFN(dl_sf, sf_symbols);
-  }
-}
-
-void PDCCH_ENODEB::encodeSubframeDataNormal(srslte_dl_sf_cfg_t& dl_sf, cf_t* sf_symbols[]) {
-  srslte_dci_msg_t dci_msg;
-  // PDCCH + PDSCH
-  dl_sf.sf_type = SRSLTE_SF_NORM;
-
-//  DCIFactory& dciFactory = fileReplay.getFactory();
-//  if(dciFactory.hasNew()) {
-//    uint32_t fileTTI = dciFactory.nextTTI();
+//void PDCCH_ENODEB::encodeSubframeData(srslte_dl_sf_cfg_t& dl_sf, cf_t* sf_symbols[SRSLTE_MAX_PORTS], bool mbsfn) {
+//  if (!mbsfn) {
+//    encodeSubframeDataNormal(dl_sf, sf_symbols);
 //  }
 //  else {
-//    exit(0);
+//    encodeSubframeDataMBSFN(dl_sf, sf_symbols);
+//  }
+//}
+
+//void PDCCH_ENODEB::encodeSubframeDataNormal(srslte_dl_sf_cfg_t& dl_sf, cf_t* sf_symbols[]) {
+//  srslte_dci_msg_t dci_msg;
+//  // PDCCH + PDSCH
+//  dl_sf.sf_type = SRSLTE_SF_NORM;
+
+//  /* Encode PDCCH */
+//  srslte_dci_location_t location = searchSpace[dl_sf.cfi - 1][dl_sf.tti % 10]->getLocations()[0];
+//  INFO("Putting DCI to location: n=%d, L=%d\n", location.ncce, location.L);
+
+//  srslte_dci_msg_pack_pdsch(&cell, &dl_sf, nullptr, &dci_dl, &dci_msg);
+//  dci_msg.location = location;
+//  if (srslte_pdcch_encode(&pdcch, &dl_sf, &dci_msg, sf_symbols)) {
+//    ERROR("Error encoding DCI message\n");
+//    exit(-1);
 //  }
 
+//  /* Configure pdsch_cfg parameters */
+//  if (srslte_ra_dl_dci_to_grant(&cell, &dl_sf, transmission_mode, enable_256qam, &dci_dl, &pdsch_cfg.grant)) {
+//    ERROR("Error configuring PDSCH\n");
+//    exit(-1);
+//  }
 
-  /* Encode PDCCH */
-  srslte_dci_location_t location = searchSpace[dl_sf.cfi - 1][dl_sf.tti % 10]->getLocations()[0];
-  INFO("Putting DCI to location: n=%d, L=%d\n", location.ncce, location.L);
+//  /* Encode PDSCH */
+//  if (srslte_pdsch_encode(&pdsch, &dl_sf, &pdsch_cfg, data, sf_symbols)) {
+//    ERROR("Error encoding PDSCH\n");
+//    exit(-1);
+//  }
+//  if (net_port > 0 && net_packet_ready) {
+//    if (null_file_sink) {
+//      for (uint32_t tb = 0; tb < SRSLTE_MAX_CODEWORDS; tb++) {
+//        srslte_bit_pack_vector(data[tb], data_tmp, pdsch_cfg.grant.tb[tb].tbs);
+//        if (srslte_netsink_write(&net_sink, data_tmp, 1 + (pdsch_cfg.grant.tb[tb].tbs - 1) / 8) < 0) {
+//          ERROR("Error sending data through UDP socket\n");
+//        }
+//      }
+//    }
+//    if(mbsfn_area_id < 0){
+//      net_packet_ready = false;
+//      sem_post(&net_sem);
+//    }
+//  }
+//}
 
-  srslte_dci_msg_pack_pdsch(&cell, &dl_sf, nullptr, &dci_dl, &dci_msg);
-  dci_msg.location = location;
-  if (srslte_pdcch_encode(&pdcch, &dl_sf, &dci_msg, sf_symbols)) {
-    ERROR("Error encoding DCI message\n");
-    exit(-1);
-  }
+//void PDCCH_ENODEB::encodeSubframeDataMBSFN(srslte_dl_sf_cfg_t& dl_sf, cf_t* sf_symbols[SRSLTE_MAX_PORTS]) {
+//  // We're sending MCH on subframe 1 - PDCCH + PMCH
+//  dl_sf.sf_type = SRSLTE_SF_MBSFN;
 
-  /* Configure pdsch_cfg parameters */
-  if (srslte_ra_dl_dci_to_grant(&cell, &dl_sf, transmission_mode, enable_256qam, &dci_dl, &pdsch_cfg.grant)) {
-    ERROR("Error configuring PDSCH\n");
-    exit(-1);
-  }
+//  /* Force 1 word and MCS 2 */
+//  dci_dl.rnti                    = SRSLTE_MRNTI;
+//  dci_dl.alloc_type              = SRSLTE_RA_ALLOC_TYPE0;
+//  dci_dl.type0_alloc.rbg_bitmask = 0xffffffff;
+//  dci_dl.tb[0].mcs_idx           = 2;
+//  dci_dl.format                  = SRSLTE_DCI_FORMAT1;
 
-  /* Encode PDSCH */
-  if (srslte_pdsch_encode(&pdsch, &dl_sf, &pdsch_cfg, data, sf_symbols)) {
-    ERROR("Error encoding PDSCH\n");
-    exit(-1);
-  }
-  if (net_port > 0 && net_packet_ready) {
-    if (null_file_sink) {
-      for (uint32_t tb = 0; tb < SRSLTE_MAX_CODEWORDS; tb++) {
-        srslte_bit_pack_vector(data[tb], data_tmp, pdsch_cfg.grant.tb[tb].tbs);
-        if (srslte_netsink_write(&net_sink, data_tmp, 1 + (pdsch_cfg.grant.tb[tb].tbs - 1) / 8) < 0) {
-          ERROR("Error sending data through UDP socket\n");
-        }
-      }
-    }
-    if(mbsfn_area_id < 0){
-      net_packet_ready = false;
-      sem_post(&net_sem);
-    }
-  }
-}
+//  /* Configure pdsch_cfg parameters */
+//  if (srslte_ra_dl_dci_to_grant(&cell, &dl_sf, SRSLTE_TM1, enable_256qam, &dci_dl, &pmch_cfg.pdsch_cfg.grant)) {
+//    ERROR("Error configuring PDSCH\n");
+//    exit(-1);
+//  }
 
-void PDCCH_ENODEB::encodeSubframeDataMBSFN(srslte_dl_sf_cfg_t& dl_sf, cf_t* sf_symbols[SRSLTE_MAX_PORTS]) {
-  // We're sending MCH on subframe 1 - PDCCH + PMCH
-  dl_sf.sf_type = SRSLTE_SF_MBSFN;
+//  for (int i = 0; i < pmch_cfg.pdsch_cfg.grant.tb[0].tbs / 8; i++) {
+//    data_mbms[i] = i % 255;
+//  }
 
-  /* Force 1 word and MCS 2 */
-  dci_dl.rnti                    = SRSLTE_MRNTI;
-  dci_dl.alloc_type              = SRSLTE_RA_ALLOC_TYPE0;
-  dci_dl.type0_alloc.rbg_bitmask = 0xffffffff;
-  dci_dl.tb[0].mcs_idx           = 2;
-  dci_dl.format                  = SRSLTE_DCI_FORMAT1;
+//  pmch_cfg.area_id = (uint16_t)mbsfn_area_id;
 
-  /* Configure pdsch_cfg parameters */
-  if (srslte_ra_dl_dci_to_grant(&cell, &dl_sf, SRSLTE_TM1, enable_256qam, &dci_dl, &pmch_cfg.pdsch_cfg.grant)) {
-    ERROR("Error configuring PDSCH\n");
-    exit(-1);
-  }
-
-  for (int i = 0; i < pmch_cfg.pdsch_cfg.grant.tb[0].tbs / 8; i++) {
-    data_mbms[i] = i % 255;
-  }
-
-  pmch_cfg.area_id = (uint16_t)mbsfn_area_id;
-
-  /* Encode PMCH */
-  if (srslte_pmch_encode(&pmch, &dl_sf, &pmch_cfg, data_mbms, sf_symbols)) {
-    ERROR("Error encoding PDSCH\n");
-    exit(-1);
-  }
-  if (net_port > 0 && net_packet_ready) {
-    if (null_file_sink) {
-      srslte_bit_pack_vector(data[0], data_tmp, pmch_cfg.pdsch_cfg.grant.tb[0].tbs);
-      if (srslte_netsink_write(&net_sink, data_tmp, 1 + (pmch_cfg.pdsch_cfg.grant.tb[0].tbs - 1) / 8) < 0) {
-        ERROR("Error sending data through UDP socket\n");
-      }
-    }
-    net_packet_ready = false;
-    sem_post(&net_sem);
-  }
-}
+//  /* Encode PMCH */
+//  if (srslte_pmch_encode(&pmch, &dl_sf, &pmch_cfg, data_mbms, sf_symbols)) {
+//    ERROR("Error encoding PDSCH\n");
+//    exit(-1);
+//  }
+//  if (net_port > 0 && net_packet_ready) {
+//    if (null_file_sink) {
+//      srslte_bit_pack_vector(data[0], data_tmp, pmch_cfg.pdsch_cfg.grant.tb[0].tbs);
+//      if (srslte_netsink_write(&net_sink, data_tmp, 1 + (pmch_cfg.pdsch_cfg.grant.tb[0].tbs - 1) / 8) < 0) {
+//        ERROR("Error sending data through UDP socket\n");
+//      }
+//    }
+//    net_packet_ready = false;
+//    sem_post(&net_sem);
+//  }
+//}
 
 void PDCCH_ENODEB::fftSamples(bool mbsfn) {
   /* Transform to OFDM symbols */

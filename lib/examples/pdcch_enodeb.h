@@ -94,7 +94,7 @@ private:
     srslte_rf_t rf;
 #endif
 
-    int net_port = -1; // -1 generates random dataThat means there is some problem sending samples to the device
+    //int net_port = -1; // -1 generates random dataThat means there is some problem sending samples to the device
 
     uint32_t cfi = 2;
     uint32_t mcs_idx = 1, last_mcs_idx = 1;
@@ -133,12 +133,12 @@ private:
 
     int sf_n_re, sf_n_samples;
 
-    pthread_t net_thread;
+    //pthread_t net_thread;
     //void *net_thread_fnc(void *arg);
-    sem_t net_sem;
-    bool net_packet_ready = false;
-    srslte_netsource_t net_source;
-    srslte_netsink_t net_sink;
+    //sem_t net_sem;
+    //bool net_packet_ready = false;
+    //srslte_netsource_t net_source;
+    //srslte_netsink_t net_sink;
 
 
     int prbset_num = 1, last_prbset_num = 1;
