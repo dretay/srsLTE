@@ -244,10 +244,6 @@ srslte_dci_dl_t DCILine::toDCI_DL() {
   //srslte_dl_sf_cfg_t dl_sf;
   //srslte_dci_cfg_t cfg;
 
-  if(msg.rnti == 56738) {
-    printf("HALT!");
-  }
-
   srslte_dci_msg_unpack_pdsch(&parent.getCell(), nullptr, nullptr, &msg, &result);
 
   // cross-check provided info with unpacked dci contents
