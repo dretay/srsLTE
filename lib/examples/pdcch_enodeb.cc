@@ -84,7 +84,7 @@ PDCCH_ENODEB::~PDCCH_ENODEB() {
 }
 
 void PDCCH_ENODEB::usage(char *prog) {
-  printf("Usage: %s [iIagmfoncvpuxb]\n", prog);
+  printf("Usage: %s [iIagmfoncvpuxbsS]\n", prog);
   printf("\t-i input_file for DCI\n");
 #ifndef DISABLE_RF
   printf("\t-I RF device [Default %s]\n", rf_dev);
@@ -107,6 +107,7 @@ void PDCCH_ENODEB::usage(char *prog) {
   //printf("\t-u listen TCP/UDP port for input data (if mbsfn is active then the stream is over mbsfn only) (-1 is random) [Default %d]\n", net_port);
   printf("\t-v [set srslte_verbose to debug, default none]\n");
   printf("\t-s output file SNR [Default %f]\n", static_cast<double>(output_file_snr));
+  printf("\t-S noise_seed for random generator (AWGN) [Default %d]\n", noise_seed);
   printf("\t-q Enable/Disable 256QAM modulation (default %s)\n", enable_256qam ? "enabled" : "disabled");
   printf("\n");
   printf("\t*: See 3GPP 36.212 Table  5.3.3.1.5-4 for more information\n");
@@ -114,7 +115,7 @@ void PDCCH_ENODEB::usage(char *prog) {
 
 void PDCCH_ENODEB::parse_args(int argc, char **argv) {
   int opt;
-  while ((opt = getopt(argc, argv, "iIadglfmoncpqvutxbwMsB")) != -1) {
+  while ((opt = getopt(argc, argv, "iIadglfmoncpqvutxbwMsSB")) != -1) {
 
     switch (opt) {
       case 'I':
@@ -171,6 +172,9 @@ void PDCCH_ENODEB::parse_args(int argc, char **argv) {
       case 's':
         output_file_snr = (float)atof(argv[optind]);
         break;
+      case 'S':
+        noise_seed = atoi(argv[optind]);
+        break;
       case 'B':
         mbsfn_sf_mask = (uint8_t)atoi(argv[optind]);
         break;
@@ -192,6 +196,8 @@ void PDCCH_ENODEB::parse_args(int argc, char **argv) {
 
 void PDCCH_ENODEB::base_init() {
   uint32_t i;
+
+  srand(noise_seed);
 
   if(input_file_name) {
     fileReplay.openFile(input_file_name);
@@ -1093,7 +1099,7 @@ void PDCCH_ENODEB::sendSamples(bool start_of_burst) {
       }
       srslte_filesink_write_multi(&fsink, (void**) output_buffer, sf_n_samples, (int)cell.nof_ports);
     }
-    usleep(1000);
+    //usleep(1000);
   }
   else {
 #ifndef DISABLE_RF

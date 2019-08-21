@@ -112,6 +112,7 @@ private:
     bool enable_256qam = false;
 
     float output_file_snr = +INFINITY;
+    int noise_seed = 0;
 
     bool null_file_sink=false;
     srslte_filesink_t fsink;
